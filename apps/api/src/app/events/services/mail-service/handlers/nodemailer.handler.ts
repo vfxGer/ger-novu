@@ -1,6 +1,8 @@
 import { ChannelTypeEnum } from '@novu/shared';
 import { ICredentials } from '@novu/dal';
 import { NodemailerProvider } from '@novu/nodemailer';
+import { ConnectionOptions } from 'tls';
+
 import { BaseHandler } from './base.handler';
 
 export class NodemailerHandler extends BaseHandler {
@@ -15,6 +17,9 @@ export class NodemailerHandler extends BaseHandler {
       secure: boolean;
       user: string;
       password: string;
+      requireTls: boolean;
+      ignoreTls: boolean;
+      tlsOptions: ConnectionOptions;
       dkim: {
         domainName: string;
         keySelector: string;
@@ -27,6 +32,9 @@ export class NodemailerHandler extends BaseHandler {
       secure: credentials.secure,
       user: credentials.user,
       password: credentials.password,
+      requireTls: credentials.requireTls,
+      ignoreTls: credentials.ignoreTls,
+      tlsOptions: credentials.tlsOptions,
       dkim: {
         domainName: credentials.domain,
         keySelector: credentials.accountSid,

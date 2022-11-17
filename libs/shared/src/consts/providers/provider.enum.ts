@@ -20,6 +20,9 @@ export enum CredentialsKeyEnum {
   ProjectName = 'projectName',
   ServiceAccount = 'serviceAccount',
   BaseUrl = 'baseUrl',
+  RequireTls = 'requireTls',
+  IgnoreTls = 'ignoreTls',
+  TlsOptions = 'tlsOptions',
 }
 
 export enum EmailProviderIdEnum {

@@ -8,6 +8,21 @@ import {
 } from '@novu/stateless';
 import nodemailer, { SendMailOptions, Transporter } from 'nodemailer';
 import DKIM from 'nodemailer/lib/dkim';
+import SMTPTransport from 'nodemailer/lib/smtp-transport';
+import { ConnectionOptions } from 'tls';
+
+interface INodemailerConfig {
+  from: string;
+  host: string;
+  port: number;
+  secure: boolean;
+  user: string;
+  password: string;
+  dkim?: DKIM.SingleKeyOptions | undefined;
+  ignoreTls?: boolean;
+  requireTls?: boolean;
+  tlsOptions?: ConnectionOptions;
+}
 
 export class NodemailerProvider implements IEmailProvider {
   id = 'nodemailer';
@@ -16,24 +31,16 @@ export class NodemailerProvider implements IEmailProvider {
 
   private transports: Transporter;
 
-  constructor(
-    private config: {
-      from: string;
-      host: string;
-      port: number;
-      secure: boolean;
-      user: string;
-      password: string;
-      dkim?: DKIM.SingleKeyOptions | undefined;
-    }
-  ) {
+  constructor(private config: INodemailerConfig) {
     let dkim = this.config.dkim;
 
     if (!dkim?.domainName || !dkim?.privateKey || !dkim?.keySelector) {
       dkim = undefined;
     }
 
-    this.transports = nodemailer.createTransport({
+    const tls: ConnectionOptions = this.getTlsOptions();
+
+    const smtpTransportOptions: SMTPTransport.Options = {
       host: this.config.host,
       port: this.config.port,
       secure: this.config.secure,
@@ -42,7 +49,37 @@ export class NodemailerProvider implements IEmailProvider {
         pass: this.config.password,
       },
       dkim,
-    });
+      ignoreTLS: this.config.ignoreTls,
+      requireTLS: this.config.requireTls,
+      ...(tls && { tls }),
+    };
+
+    this.transports = nodemailer.createTransport(smtpTransportOptions);
+  }
+
+  getTlsOptions(): ConnectionOptions | undefined {
+    /**
+     * Only render TLS options if secure is enabled to true.
+     * Reference: https://nodemailer.com/smtp/#tls-options
+     *
+     */
+    if (this.config.secure && !!this.config.tlsOptions) {
+      this.validateTlsOptions();
+
+      return this.config.tlsOptions;
+    }
+
+    return undefined;
+  }
+
+  validateTlsOptions(): void {
+    try {
+      JSON.parse(JSON.stringify(this.config.tlsOptions));
+    } catch {
+      throw new Error(
+        'TLS options is not a valid JSON. Check again the environment variable NODEMAILER_TLS_OPTIONS'
+      );
+    }
   }
 
   async sendMessage(

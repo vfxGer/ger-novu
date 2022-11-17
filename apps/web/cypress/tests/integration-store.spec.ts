@@ -5,46 +5,92 @@ describe('Integration store page', function () {
     cy.initializeSession().as('session');
   });
 
-  it('should display email available for connection', function () {
-    cy.visit('/integrations');
-    cy.location('pathname').should('equal', '/integrations');
+  describe('Sendgrid', () => {
+    it('should display email available for connection', function () {
+      cy.visit('/integrations');
+      cy.location('pathname').should('equal', '/integrations');
 
-    getFirstIntegrationCard().get('button').contains('Connect');
+      getFirstIntegrationCard().get('button').contains('Connect');
+    });
+
+    it('should display integrated sendgrid provider', function () {
+      interceptSendgridIntegration(true);
+
+      cy.visit('/integrations');
+
+      getFirstIntegrationCard().getByTestId('card-status-bar-active').contains('Active');
+
+      getFirstIntegrationCard()
+        .getByTestId('card-status-bar-active')
+        .should(($div) => {
+          const text = $div.text();
+
+          expect(text).to.match(/^Active$/);
+        });
+    });
+
+    it('should display not integrated sendgrid provider', function () {
+      interceptSendgridIntegration(false);
+
+      cy.visit('/integrations');
+
+      getFirstIntegrationCard().getByTestId('card-status-bar-active').contains('Not Active');
+    });
+
+    it('should display use credentials on settings modal', function () {
+      interceptSendgridIntegration(true);
+
+      cy.visit('/integrations');
+
+      getFirstIntegrationCard().getByTestId('provider-card-settings-svg').click();
+
+      cy.getByTestId('apiKey').should('have.value', '123');
+      cy.getByTestId('from').should('have.value', 'cypress');
+    });
   });
 
-  it('should display integrated sendgrid provider', function () {
-    interceptIntegration(true);
+  describe('Nodemailer', () => {
+    it('should display email available for connection', function () {
+      cy.visit('/integrations');
+      cy.location('pathname').should('equal', '/integrations');
 
-    cy.visit('/integrations');
+      getFirstIntegrationCard().get('button').contains('Connect');
+    });
 
-    getFirstIntegrationCard().getByTestId('card-status-bar-active').contains('Active');
+    it('should display integrated nodemailer provider', function () {
+      interceptNodemailerIntegration(true);
 
-    getFirstIntegrationCard()
-      .getByTestId('card-status-bar-active')
-      .should(($div) => {
-        const text = $div.text();
+      cy.visit('/integrations');
 
-        expect(text).to.match(/^Active$/);
-      });
-  });
+      getFirstIntegrationCard().getByTestId('card-status-bar-active').contains('Active');
 
-  it('should display not integrated sendgrid provider', function () {
-    interceptIntegration(false);
+      getFirstIntegrationCard()
+        .getByTestId('card-status-bar-active')
+        .should(($div) => {
+          const text = $div.text();
 
-    cy.visit('/integrations');
+          expect(text).to.match(/^Active$/);
+        });
+    });
 
-    getFirstIntegrationCard().getByTestId('card-status-bar-active').contains('Not Active');
-  });
+    it('should display not integrated sendgrid provider', function () {
+      interceptNodemailerIntegration(false);
 
-  it('should display use credentials on settings modal', function () {
-    interceptIntegration(true);
+      cy.visit('/integrations');
 
-    cy.visit('/integrations');
+      getFirstIntegrationCard().getByTestId('card-status-bar-active').contains('Not Active');
+    });
 
-    getFirstIntegrationCard().getByTestId('provider-card-settings-svg').click();
+    it('should display use credentials on settings modal', function () {
+      interceptNodemailerIntegration(true);
 
-    cy.getByTestId('apiKey').should('have.value', '123');
-    cy.getByTestId('from').should('have.value', 'cypress');
+      cy.visit('/integrations');
+
+      getFirstIntegrationCard().getByTestId('provider-card-settings-svg').click();
+
+      cy.getByTestId('apiKey').should('have.value', '123');
+      cy.getByTestId('from').should('have.value', 'cypress');
+    });
   });
 });
 
@@ -52,7 +98,7 @@ function getFirstIntegrationCard() {
   return cy.getByTestId('integration-group-email').getByTestId('integration-provider-card').eq(0);
 }
 
-function interceptIntegration(isActive: boolean) {
+function interceptSendgridIntegration(isActive: boolean) {
   cy.intercept('*/integrations', {
     data: [
       {
@@ -60,6 +106,28 @@ function interceptIntegration(isActive: boolean) {
         providerId: 'sendgrid',
         active: isActive,
         credentials: { apiKey: '123', from: 'cypress' },
+      },
+    ],
+  });
+}
+
+function interceptNodemailerIntegration(isActive: boolean) {
+  cy.intercept('*/integrations', {
+    data: [
+      {
+        channel: ChannelTypeEnum.EMAIL,
+        providerId: 'nodemailer',
+        active: isActive,
+        credentials: {
+          from: 'cypress',
+          senderName: 'Novu',
+          host: 'localhost.novu.co',
+          port: 587,
+          secure: true,
+          requireTls: true,
+          ignoreTls: false,
+          tlsOptions: { requireUnauthorized: false },
+        },
       },
     ],
   });
