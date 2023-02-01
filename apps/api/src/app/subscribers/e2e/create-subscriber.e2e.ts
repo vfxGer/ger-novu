@@ -37,10 +37,10 @@ describe('Create Subscriber - /subscribers (POST)', function () {
     expect(body.data).to.be.ok;
     const createdSubscriber = await subscriberRepository.findBySubscriberId(session.environment._id, '123');
 
-    expect(createdSubscriber.firstName).to.equal('John');
-    expect(createdSubscriber.email).to.equal('john@doe.com');
-    expect(createdSubscriber.phone).to.equal('+972523333333');
-    expect(createdSubscriber.locale).to.equal('en');
+    expect(createdSubscriber?.firstName).to.equal('John');
+    expect(createdSubscriber?.email).to.equal('john@doe.com');
+    expect(createdSubscriber?.phone).to.equal('+972523333333');
+    expect(createdSubscriber?.locale).to.equal('en');
   });
 
   it('should update subscriber if already created', async function () {
@@ -92,8 +92,8 @@ describe('Create Subscriber - /subscribers (POST)', function () {
     expect(body.data).to.be.ok;
     const createdSubscriber = await subscriberRepository.findBySubscriberId(session.environment._id, '123');
 
-    expect(createdSubscriber.firstName).to.equal('Mary');
-    expect(createdSubscriber.email).to.equal('john@doe.com');
-    expect(createdSubscriber.locale).to.equal('en');
+    expect(createdSubscriber?.firstName).to.equal('Mary');
+    expect(createdSubscriber?.email).to.equal('john@doe.com');
+    expect(createdSubscriber?.locale).to.equal('en');
   });
 });

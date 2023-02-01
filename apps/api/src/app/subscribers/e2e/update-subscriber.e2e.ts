@@ -50,11 +50,11 @@ describe('Update Subscriber - /subscribers/:subscriberId (PUT)', function () {
     expect(body.data).to.be.ok;
     const createdSubscriber = await subscriberRepository.findBySubscriberId(session.environment._id, '123');
 
-    expect(createdSubscriber.firstName).to.equal('John');
-    expect(createdSubscriber.lastName).to.equal('Test Changed');
-    expect(createdSubscriber.email).to.equal('changed@mail.com');
-    expect(createdSubscriber.phone).to.equal('+972523333333');
-    expect(createdSubscriber.locale).to.equal('sv');
+    expect(createdSubscriber?.firstName).to.equal('John');
+    expect(createdSubscriber?.lastName).to.equal('Test Changed');
+    expect(createdSubscriber?.email).to.equal('changed@mail.com');
+    expect(createdSubscriber?.phone).to.equal('+972523333333');
+    expect(createdSubscriber?.locale).to.equal('sv');
   });
 
   it('should update an existing subscriber credentials', async function () {
@@ -92,9 +92,9 @@ describe('Update Subscriber - /subscribers/:subscriberId (PUT)', function () {
     expect(body.data).to.be.ok;
     const createdSubscriber = await subscriberRepository.findBySubscriberId(session.environment._id, '123');
 
-    const subscriberChannel = createdSubscriber.channels.find((channel) => channel.providerId === 'slack');
+    const subscriberChannel = createdSubscriber?.channels?.find((channel) => channel.providerId === 'slack');
 
-    expect(subscriberChannel.providerId).to.equal('slack');
-    expect(subscriberChannel.credentials.webhookUrl).to.equal('webhookUrlNew');
+    expect(subscriberChannel?.providerId).to.equal('slack');
+    expect(subscriberChannel?.credentials.webhookUrl).to.equal('webhookUrlNew');
   });
 });
